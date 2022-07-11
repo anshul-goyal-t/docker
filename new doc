@@ -1,0 +1,43 @@
+FROM ubuntu:18.04
+
+#Updating and upgrading
+RUN apt upgrade
+RUN apt update
+RUN export DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND noninteractive
+RUN apt-get update && apt -y install \
+    curl \
+    -f \
+    policycoreutils\
+    software-properties-common \
+    sudo \
+    unzip \
+    vim \
+    wget
+
+RUN apt update && apt install -y tcl
+RUN add-apt-repository ppa:x2go/stable && \
+    apt update && \
+    apt -y install \
+    xfce4 \
+    xfce4-terminal \
+    x2goserver \
+    x2goserver-xsession && \
+    update-alternatives --config x-terminal-emulator && \
+    export DISPLAY=:1
+
+ARG user
+ARG uid
+ARG gid
+
+#Add new user with our credentials
+ENV USERNAME ${user}
+RUN useradd -m $USERNAME && \
+        echo "$USERNAME:$USERNAME" | chpasswd && \
+        usermod --shell /bin/bash $USERNAME && \
+        usermod  --uid ${uid} $USERNAME && \
+        groupmod --gid ${gid} $USERNAME
+
+USER ${user}
+
+WORKDIR /home/${user}
